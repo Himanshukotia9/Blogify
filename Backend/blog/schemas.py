@@ -6,3 +6,4 @@ class Blog(BaseModel):
 
 class ShowBlog(BaseModel):
     title: str
+    body: str

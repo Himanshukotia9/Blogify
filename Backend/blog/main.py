@@ -1,9 +1,24 @@
 from fastapi import FastAPI, Depends, status, HTTPException
+from typing import List
 from . import schemas, models
 from .database import engine, SessionLocal
 from sqlalchemy.orm import session
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = ['*'],
+    allow_credentials = True,
+    allow_methods = ['*'],
+    allow_headers = ['*']
+)
 
 models.Base.metadata.create_all(engine)
 
@@ -24,7 +39,7 @@ def create(request: schemas.Blog, db: session = Depends(get_db)):
 
 @app.get('/blog')
 def get(db: session = Depends(get_db)):
-    blogs = db.query(models.Blog).all()
+    blogs = db.query(models.Blog).order_by(models.Blog.id.asc()).all()
     return blogs
 
 @app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)

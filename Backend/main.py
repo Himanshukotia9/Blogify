@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from typing import Optional
 from pydantic import BaseModel
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 
 class Blog(BaseModel):
     title: str
@@ -9,6 +10,19 @@ class Blog(BaseModel):
     published: Optional[bool]
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = origins,
+    allow_credentials = True,
+    allow_method = ['*'],
+    allow_headers = ['*']
+)
 
 @app.get('/')
 def blog():
