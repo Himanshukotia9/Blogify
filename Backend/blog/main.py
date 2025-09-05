@@ -1,8 +1,9 @@
+# main.py
 from fastapi import FastAPI, Depends, status, HTTPException
 from typing import List
 from . import schemas, models
 from .database import engine, SessionLocal
-from sqlalchemy.orm import session
+from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -30,7 +31,7 @@ def get_db():
         db.close()
 
 @app.post('/blog', status_code=status.HTTP_201_CREATED)
-def create(request: schemas.Blog, db: session = Depends(get_db)):
+def create(request: schemas.Blog, db: Session = Depends(get_db)):
     new_blog  = models.Blog(title = request.title, body = request.body)
     db.add(new_blog)
     db.commit()
@@ -38,12 +39,12 @@ def create(request: schemas.Blog, db: session = Depends(get_db)):
     return new_blog
 
 @app.get('/blog')
-def get(db: session = Depends(get_db)):
+def get(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).order_by(models.Blog.id.asc()).all()
     return blogs
 
 @app.get('/blog/{id}', status_code=200, response_model=schemas.ShowBlog)
-def getSingle(id, db: session = Depends(get_db)):
+def getSingle(id, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if blog:
         return blog
@@ -51,7 +52,7 @@ def getSingle(id, db: session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog Not Found with id {id}")
     
 @app.delete('/blog/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete(id, db: session = Depends(get_db)):
+def delete(id, db: Session = Depends(get_db)):
     try:
         blog = db.query(models.Blog).filter(models.Blog.id == id).first()
         if not blog:
@@ -67,7 +68,7 @@ def delete(id, db: session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error deleting item: {str(e)}")
 
 @app.put('/blog/{id}', status_code=status.HTTP_202_ACCEPTED)
-def update(id, request: schemas.Blog, db:session = Depends(get_db)):
+def update(id, request: schemas.Blog, db:Session = Depends(get_db)):
     try:
         blog_query = db.query(models.Blog).filter(models.Blog.id == id)
         blog = blog_query.first()
